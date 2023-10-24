@@ -24,7 +24,6 @@ Obfuscate strings to make them harder to find in binary parsing.
 - random
   Randomly selected from the above methods.
 
-
 #### Simple Usage
 
 Simplest usage is as follows.
