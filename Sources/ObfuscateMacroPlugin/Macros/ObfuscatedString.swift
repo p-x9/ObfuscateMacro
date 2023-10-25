@@ -14,6 +14,8 @@ import CryptoKit
 import ObfuscateSupport
 
 struct ObfuscatedString {
+    typealias Diagnostic = ObfuscateMacroDiagnostic
+
     struct Arguments {
         /// The string to be obfuscated.
         let string: String
@@ -29,7 +31,10 @@ struct ObfuscatedString {
     /// Parsing the syntax of macro argument lists
     /// - Parameter arguments: A syntax of macro argument list
     /// - Returns: Parsed arguments
-    static func arguments(of arguments: LabeledExprListSyntax) -> Arguments? {
+    static func arguments(
+        of arguments: LabeledExprListSyntax, 
+        context: some MacroExpansionContext
+    ) -> Arguments? {
         guard let firstElement = arguments.first?.expression,
               let stringLiteral = firstElement.as(StringLiteralExprSyntax.self) else {
             return nil
@@ -59,6 +64,9 @@ struct ObfuscatedString {
             }
             if !methodElements.isEmpty {
                 method = .random(methodElements)
+            } else {
+                context.diagnose(Diagnostic.methodCandidateIsEmpty.diagnose(at: argument.elements))
+                method = .random(ObfuscateMethod.Element.allCases)
             }
         }
 
@@ -71,8 +79,10 @@ extension ObfuscatedString: ExpressionMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) -> ExprSyntax {
-        guard let arguments = arguments(of: node.argumentList) else {
-            fatalError()
+        guard let arguments = arguments(of: node.argumentList, context: context) else {
+            let diagnostic = Diagnostic.failedToParseArguments.diagnose(at: node.argumentList)
+            context.diagnose(diagnostic)
+            fatalError(diagnostic.message)
         }
 
         let string = arguments.string
