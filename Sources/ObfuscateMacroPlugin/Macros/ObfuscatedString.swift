@@ -133,12 +133,18 @@ extension ObfuscatedString {
             in: 0x00...0xFF,
             using: &randomNumberGenerator
         )
-        let obfuscatedData = string.utf8.enumerated().map { i, c in c ^ (seed &+ UTF8.CodeUnit(i)) }
+        let obfuscatedData = string.utf8.enumerated().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c ^ (seed &+ i)
+        }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in c ^ (\(raw: seed) &+ UTF8.CodeUnit(i)) },
+                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c ^ (\(raw: seed) &+ i)
+                },
                 encoding: .utf8
             )!
         }()
@@ -164,12 +170,18 @@ extension ObfuscatedString {
             in: 0x0...0xF,
             using: &randomNumberGenerator
         )
-        let obfuscatedData = string.utf8.enumerated().map { i, c in c &+ (start &+ (step &* UTF8.CodeUnit(i))) }
+        let obfuscatedData = string.utf8.enumerated().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c &+ (start &+ (step &* i))
+        }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in c &- (\(raw: start) &+ (\(raw: step) &* UTF8.CodeUnit(i))) },
+                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c &- (\(raw: start) &+ (\(raw: step) &* i))
+                },
                 encoding: .utf8
             )!
         }()
