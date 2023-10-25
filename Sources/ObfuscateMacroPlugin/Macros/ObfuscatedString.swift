@@ -75,6 +75,8 @@ struct ObfuscatedString {
 }
 
 extension ObfuscatedString: ExpressionMacro {
+    static var randomNumberGenerator: RandomNumberGenerator = SystemRandomNumberGenerator()
+
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -88,7 +90,20 @@ extension ObfuscatedString: ExpressionMacro {
         let string = arguments.string
 
         let methods = arguments.method.elements
-        let method = methods.randomElement() ?? .bitXOR
+        let method: ObfuscateMethod.Element = {
+            if methods.isEmpty {
+                fatalError("Invalid Argument")
+            } else if methods.count == 1 {
+                return methods[0]
+            } else {
+                let allCases = ObfuscateMethod.Element.allCases
+                let index = Int.random(
+                    in: allCases.startIndex..<allCases.endIndex,
+                    using: &randomNumberGenerator
+                )
+                return allCases[index]
+            }
+        }()
 
         switch method {
         case .bitShift:
@@ -114,13 +129,22 @@ extension ObfuscatedString {
     /// - Parameter string: The string to be obfuscated.
     /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByXOR(_ string: String) -> ExprSyntax {
-        let seed: UTF8.CodeUnit = (0x00...0xFF).randomElement() ?? 0xFF
-        let obfuscatedData = string.utf8.enumerated().map { i, c in c ^ (seed + UTF8.CodeUnit(i)) }
+        let seed: UTF8.CodeUnit = .random(
+            in: 0x00...0xFF,
+            using: &randomNumberGenerator
+        )
+        let obfuscatedData = string.utf8.enumerated().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c ^ (seed &+ i)
+        }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in c ^ (\(raw: seed) + UTF8.CodeUnit(i)) },
+                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c ^ (\(raw: seed) &+ i)
+                },
                 encoding: .utf8
             )!
         }()
@@ -138,14 +162,26 @@ extension ObfuscatedString {
     /// - Parameter string: The string to be obfuscated.
     /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByShift(_ string: String) -> ExprSyntax {
-        let start: UTF8.CodeUnit = (0x00...0xFF).randomElement() ?? 0xFF
-        let step: UTF8.CodeUnit = (0x00...0xF).randomElement() ?? 0xFF
-        let obfuscatedData = string.utf8.enumerated().map { i, c in c &+ (start &+ (step &* UTF8.CodeUnit(i))) }
+        let start: UTF8.CodeUnit = .random(
+            in: 0x00...0xFF,
+            using: &randomNumberGenerator
+        )
+        let step: UTF8.CodeUnit = .random(
+            in: 0x0...0xF,
+            using: &randomNumberGenerator
+        )
+        let obfuscatedData = string.utf8.enumerated().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c &+ (start &+ (step &* i))
+        }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in c &- (\(raw: start) &+ (\(raw: step) &* UTF8.CodeUnit(i))) },
+                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c &- (\(raw: start) &+ (\(raw: step) &* i))
+                },
                 encoding: .utf8
             )!
         }()
@@ -178,15 +214,23 @@ extension ObfuscatedString {
     /// - Parameter string: The string to be obfuscated.
     /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByAES(_ string: String) -> ExprSyntax {
-        let key: SymmetricKey = .init(size: .bits128)
-        let keyData = key.withUnsafeBytes { Data($0) }
+        let keyData = Data.symmetricKeyData(
+            size: 16, // 128 bits
+            using: &randomNumberGenerator
+        )
+        let key: SymmetricKey = .init(data: keyData)
+
+        let nonceData = Data.nonceData(
+            using: &randomNumberGenerator
+        )
 
         guard let data = string.data(using: .utf8),
-              let sealedBox = try? AES.GCM.seal(data, using: key),
+              let nonce = try? AES.GCM.Nonce(data: nonceData),
+              let sealedBox = try? AES.GCM.seal(data, using: key, nonce: nonce),
               let encryptedData = sealedBox.combined else {
             return "\"\(raw: string)\""
         }
-        
+
 
         return """
         {
