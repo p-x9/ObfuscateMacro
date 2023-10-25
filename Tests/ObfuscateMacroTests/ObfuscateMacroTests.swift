@@ -41,6 +41,39 @@ final class ObfuscateMacroTests: XCTestCase {
         )
     }
 
+    func testDeObfuscatedLongString() {
+        let original = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+        XCTAssertEqual(
+            original,
+            #ObfuscatedString(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                method: .bitShift
+            )
+        )
+        XCTAssertEqual(
+            original,
+            #ObfuscatedString(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                method: .bitXOR
+            )
+        )
+        XCTAssertEqual(
+            original,
+            #ObfuscatedString(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                method: .base64
+            )
+        )
+        XCTAssertEqual(
+            original,
+            #ObfuscatedString(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                method: .AES
+            )
+        )
+    }
+
     func testBitShift() {
         assertMacroExpansion(
             """
@@ -53,7 +86,8 @@ final class ObfuscateMacroTests: XCTestCase {
             let string = {
                 String(
                     bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
-                        c &- (1 &+ (0 &* UTF8.CodeUnit(i)))
+                        let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                        return c &- (1 &+ (0 &* i))
                     },
                     encoding: .utf8
                 )!
@@ -75,7 +109,8 @@ final class ObfuscateMacroTests: XCTestCase {
             let string = {
                 String(
                     bytes: Data([105, 103, 111, 104, 106, 42, 39, 235, 136, 153, 232, 142, 158, 237, 142, 187, 242, 147, 178, 247, 148, 185, 59, 56, 233, 133, 138, 182]).enumerated().map { i, c in
-                        c ^ (1 &+ UTF8.CodeUnit(i))
+                        let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                        return c ^ (1 &+ i)
                     },
                     encoding: .utf8
                 )!
@@ -141,7 +176,8 @@ final class ObfuscateMacroTests: XCTestCase {
             let string = {
                 String(
                     bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
-                        c &- (1 &+ (0 &* UTF8.CodeUnit(i)))
+                        let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                        return c &- (1 &+ (0 &* i))
                     },
                     encoding: .utf8
                 )!
@@ -157,7 +193,8 @@ final class ObfuscateMacroTests: XCTestCase {
             let string = {
                 String(
                     bytes: Data([150, 154, 108, 109, 109, 47, 36, 230, 135, 148, 235, 139, 153, 232, 141, 166, 237, 142, 177, 242, 147, 188, 56, 53, 230, 136, 137, 179]).enumerated().map { i, c in
-                        c ^ (254 &+ UTF8.CodeUnit(i))
+                        let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                        return c ^ (254 &+ i)
                     },
                     encoding: .utf8
                 )!
@@ -193,7 +230,8 @@ final class ObfuscateMacroTests: XCTestCase {
             let string = {
                 String(
                     bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
-                        c &- (1 &+ (0 &* UTF8.CodeUnit(i)))
+                        let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                        return c &- (1 &+ (0 &* i))
                     },
                     encoding: .utf8
                 )!
