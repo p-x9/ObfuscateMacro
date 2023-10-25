@@ -15,7 +15,9 @@ import ObfuscateSupport
 
 struct ObfuscatedString {
     struct Arguments {
+        /// The string to be obfuscated.
         let string: String
+        /// obfuscation method
         let method: ObfuscateMethod
 
         init(string: String, method: ObfuscateMethod?) {
@@ -23,7 +25,10 @@ struct ObfuscatedString {
             self.method = method ?? .randomAll
         }
     }
-
+    
+    /// Parsing the syntax of macro argument lists
+    /// - Parameter arguments: A syntax of macro argument list
+    /// - Returns: Parsed arguments
     static func arguments(of arguments: LabeledExprListSyntax) -> Arguments? {
         guard let firstElement = arguments.first?.expression,
               let stringLiteral = firstElement.as(StringLiteralExprSyntax.self) else {
@@ -89,6 +94,15 @@ extension ObfuscatedString: ExpressionMacro {
 }
 
 extension ObfuscatedString {
+    /// Obfuscates the given string using XOR operation.
+    ///
+    /// Using a random `seed` and the index `i` of the UTF8 element `c`, the following expression is obfuscated
+    /// ```
+    /// c ^ (seed + i)
+    /// ```
+    ///
+    /// - Parameter string: The string to be obfuscated.
+    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByXOR(_ string: String) -> ExprSyntax {
         let seed: UTF8.CodeUnit = (0x00...0xFF).randomElement() ?? 0xFF
         let obfuscatedData = string.utf8.enumerated().map { i, c in c ^ (seed + UTF8.CodeUnit(i)) }
@@ -102,7 +116,17 @@ extension ObfuscatedString {
         }()
         """
     }
-
+    
+    /// Obfuscates the given string using bit shift operation.
+    ///
+    /// Using a random `start`, `step` and the index `i` of the UTF8 element `c`, the following expression is obfuscated
+    /// Use &+ and &- operators to account for overflow after a shift.
+    /// ```
+    /// c + (start + (step * i))
+    /// ```
+    ///
+    /// - Parameter string: The string to be obfuscated.
+    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByShift(_ string: String) -> ExprSyntax {
         let start: UTF8.CodeUnit = (0x00...0xFF).randomElement() ?? 0xFF
         let step: UTF8.CodeUnit = (0x00...0xF).randomElement() ?? 0xFF
@@ -117,7 +141,10 @@ extension ObfuscatedString {
         }()
         """
     }
-
+    
+    /// Obfuscates the given string using base64 operation.
+    /// - Parameter string: The string to be obfuscated.
+    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByBase64(_ string: String) -> ExprSyntax {
         guard let data = string.data(using: .utf8) else {
             return "\"\(raw: string)\""
@@ -133,7 +160,13 @@ extension ObfuscatedString {
         }()
         """
     }
-
+    
+    /// Obfuscates the given string using AES operation.
+    ///
+    /// A 128-bit random key is used
+    ///
+    /// - Parameter string: The string to be obfuscated.
+    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
     static func obfuscateByAES(_ string: String) -> ExprSyntax {
         let key: SymmetricKey = .init(size: .bits128)
         let keyData = key.withUnsafeBytes { Data($0) }
