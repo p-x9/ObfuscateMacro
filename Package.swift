@@ -44,7 +44,14 @@ let package = Package(
         .target(name: "ObfuscateSupport"),
         .testTarget(
             name: "ObfuscateMacroTests",
-            dependencies: ["ObfuscateMacro"]
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                "ObfuscateMacro"
+            ]
         ),
     ]
 )
