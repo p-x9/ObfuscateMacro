@@ -85,7 +85,7 @@ final class ObfuscateMacroTests: XCTestCase {
             expandedSource: """
             let string = {
                 String(
-                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
+                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).indexed().map { i, c in
                         let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                         return c &- (1 &+ (0 &* i))
                     },
@@ -108,7 +108,7 @@ final class ObfuscateMacroTests: XCTestCase {
             expandedSource: """
             let string = {
                 String(
-                    bytes: Data([105, 103, 111, 104, 106, 42, 39, 235, 136, 153, 232, 142, 158, 237, 142, 187, 242, 147, 178, 247, 148, 185, 59, 56, 233, 133, 138, 182]).enumerated().map { i, c in
+                    bytes: Data([105, 103, 111, 104, 106, 42, 39, 235, 136, 153, 232, 142, 158, 237, 142, 187, 242, 147, 178, 247, 148, 185, 59, 56, 233, 133, 138, 182]).indexed().map { i, c in
                         let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                         return c ^ (1 &+ i)
                     },
@@ -175,7 +175,7 @@ final class ObfuscateMacroTests: XCTestCase {
             expandedSource: """
             let string = {
                 String(
-                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
+                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).indexed().map { i, c in
                         let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                         return c &- (1 &+ (0 &* i))
                     },
@@ -192,7 +192,7 @@ final class ObfuscateMacroTests: XCTestCase {
             expandedSource: """
             let string = {
                 String(
-                    bytes: Data([150, 154, 108, 109, 109, 47, 36, 230, 135, 148, 235, 139, 153, 232, 141, 166, 237, 142, 177, 242, 147, 188, 56, 53, 230, 136, 137, 179]).enumerated().map { i, c in
+                    bytes: Data([150, 154, 108, 109, 109, 47, 36, 230, 135, 148, 235, 139, 153, 232, 141, 166, 237, 142, 177, 242, 147, 188, 56, 53, 230, 136, 137, 179]).indexed().map { i, c in
                         let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                         return c ^ (254 &+ i)
                     },
@@ -229,7 +229,7 @@ final class ObfuscateMacroTests: XCTestCase {
             expandedSource: """
             let string = {
                 String(
-                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).enumerated().map { i, c in
+                    bytes: Data([105, 102, 109, 109, 112, 45, 33, 228, 130, 148, 228, 131, 148, 228, 130, 172, 228, 130, 162, 228, 130, 176, 45, 33, 241, 160, 146, 171]).indexed().map { i, c in
                         let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                         return c &- (1 &+ (0 &* i))
                     },
