@@ -28,6 +28,7 @@ let package = Package(
         .target(
             name: "ObfuscateMacro",
             dependencies: [
+                .product(name: "Algorithms", package: "swift-algorithms"),
                 "ObfuscateMacroPlugin",
                 "ObfuscateSupport"
             ]
