@@ -21,6 +21,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-syntax.git",
                  from: "509.0.0"),
+        .package(url: "https://github.com/apple/swift-algorithms",
+                 from: "1.1.0")
     ],
     targets: [
         .target(
@@ -38,6 +40,7 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "Algorithms", package: "swift-algorithms"),
                 "ObfuscateSupport"
             ]
         ),

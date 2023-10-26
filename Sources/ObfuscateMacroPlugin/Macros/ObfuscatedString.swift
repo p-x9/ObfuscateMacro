@@ -6,6 +6,7 @@
 //  
 //
 
+import Algorithms
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
@@ -133,15 +134,15 @@ extension ObfuscatedString {
             in: 0x00...0xFF,
             using: &randomNumberGenerator
         )
-        let obfuscatedData = string.utf8.enumerated().map { i, c in
-            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+        let obfuscatedData = string.utf8.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(string.utf8.distance(from: string.utf8.startIndex, to: i) % Int(UInt8.max))
             return c ^ (seed &+ i)
         }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in 
                     let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                     return c ^ (\(raw: seed) &+ i)
                 },
@@ -170,15 +171,15 @@ extension ObfuscatedString {
             in: 0x0...0xF,
             using: &randomNumberGenerator
         )
-        let obfuscatedData = string.utf8.enumerated().map { i, c in
-            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+        let obfuscatedData = string.utf8.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(string.utf8.distance(from: string.utf8.startIndex, to: i) % Int(UInt8.max))
             return c &+ (start &+ (step &* i))
         }
 
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).enumerated().map { i, c in 
+                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in 
                     let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                     return c &- (\(raw: start) &+ (\(raw: step) &* i))
                 },
