@@ -1,7 +1,6 @@
 import XCTest
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
-import CryptoKit
 @testable import ObfuscateMacroPlugin
 @testable import ObfuscateMacro
 
@@ -35,10 +34,12 @@ final class ObfuscateMacroTests: XCTestCase {
             "hello, こんにちは, 👪",
             #ObfuscatedString("hello, こんにちは, 👪", method: .base64)
         )
+#if canImport(CryptoKit)
         XCTAssertEqual(
             "hello, こんにちは, 👪",
             #ObfuscatedString("hello, こんにちは, 👪", method: .AES)
         )
+#endif
     }
 
     func testDeObfuscatedLongString() {
@@ -65,6 +66,7 @@ final class ObfuscateMacroTests: XCTestCase {
                 method: .base64
             )
         )
+#if canImport(CryptoKit)
         XCTAssertEqual(
             original,
             #ObfuscatedString(
@@ -72,6 +74,7 @@ final class ObfuscateMacroTests: XCTestCase {
                 method: .AES
             )
         )
+#endif
     }
 
     func testBitShift() {
@@ -140,6 +143,7 @@ final class ObfuscateMacroTests: XCTestCase {
         )
     }
 
+#if canImport(CryptoKit)
     func testAES() {
         assertMacroExpansion(
             """
@@ -161,6 +165,7 @@ final class ObfuscateMacroTests: XCTestCase {
             macros: macros
         )
     }
+#endif
 
     func testRandomAll() {
         let originalSource = """
