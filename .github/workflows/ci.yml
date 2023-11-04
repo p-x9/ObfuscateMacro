@@ -37,7 +37,7 @@ jobs:
         run: swift test
 
   linux-test:
-    name: Linux
+    name: Linux Test
     runs-on: ubuntu-latest
     steps:
       - name: Install Swift
@@ -47,5 +47,5 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Run tests
+      - name: Test
         run: swift test
