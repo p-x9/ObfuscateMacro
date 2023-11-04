@@ -3,7 +3,7 @@
 //
 //
 //  Created by p-x9 on 2023/07/18.
-//  
+//
 //
 
 import Algorithms
@@ -11,7 +11,9 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
+#if canImport(CryptoKit)
 import CryptoKit
+#endif
 import ObfuscateSupport
 
 struct ObfuscatedString {
@@ -28,12 +30,12 @@ struct ObfuscatedString {
             self.method = method ?? .randomAll
         }
     }
-    
+
     /// Parsing the syntax of macro argument lists
     /// - Parameter arguments: A syntax of macro argument list
     /// - Returns: Parsed arguments
     static func arguments(
-        of arguments: LabeledExprListSyntax, 
+        of arguments: LabeledExprListSyntax,
         context: some MacroExpansionContext
     ) -> Arguments? {
         guard let firstElement = arguments.first?.expression,
@@ -113,8 +115,10 @@ extension ObfuscatedString: ExpressionMacro {
             return obfuscateByXOR(string)
         case .base64:
             return obfuscateByBase64(string)
+#if canImport(CryptoKit)
         case .AES:
             return obfuscateByAES(string)
+#endif
         }
     }
 }
@@ -142,7 +146,7 @@ extension ObfuscatedString {
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in 
+                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in
                     let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                     return c ^ (\(raw: seed) &+ i)
                 },
@@ -151,7 +155,7 @@ extension ObfuscatedString {
         }()
         """
     }
-    
+
     /// Obfuscates the given string using bit shift operation.
     ///
     /// Using a random `start`, `step` and the index `i` of the UTF8 element `c`, the following expression is obfuscated
@@ -179,7 +183,7 @@ extension ObfuscatedString {
         return """
         {
             String(
-                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in 
+                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in
                     let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
                     return c &- (\(raw: start) &+ (\(raw: step) &* i))
                 },
@@ -188,7 +192,7 @@ extension ObfuscatedString {
         }()
         """
     }
-    
+
     /// Obfuscates the given string using base64 operation.
     /// - Parameter string: The string to be obfuscated.
     /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
@@ -207,7 +211,8 @@ extension ObfuscatedString {
         }()
         """
     }
-    
+
+#if canImport(CryptoKit)
     /// Obfuscates the given string using AES operation.
     ///
     /// A 128-bit random key is used
@@ -244,4 +249,5 @@ extension ObfuscatedString {
         }()
         """
     }
+#endif
 }

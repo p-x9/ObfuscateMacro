@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(CryptoKit)
 import CryptoKit
+#endif
 
 extension Data {
     var array: [UInt8]? {
@@ -19,6 +21,7 @@ extension Data {
     }
 }
 
+#if canImport(CryptoKit)
 extension Data {
     /// Generates a new random symmetric key data of the given size.
     /// - Parameters:
@@ -74,3 +77,4 @@ extension Data {
         return nonceData
     }
 }
+#endif
