@@ -40,6 +40,10 @@ final class ObfuscateMacroTests: XCTestCase {
             #ObfuscatedString("hello, こんにちは, 👪", method: .AES)
         )
 #endif
+        XCTAssertEqual(
+            "hello, こんにちは, 👪",
+            #ObfuscatedString("hello, こんにちは, 👪", repetitions: 5)
+        )
     }
 
     func testDeObfuscatedLongString() {
