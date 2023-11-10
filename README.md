@@ -54,6 +54,19 @@ Randomly from among those selected.
 let string = #ObfuscatedString("Hello", method: .random([.bitXOR, .AES]))
 ```
 
+#### Repetitive obfuscation
+
+For stronger obfuscation, perform the obfuscation process repeatedly.
+
+Specify the number of repetitions as follows
+
+```swift
+#ObfuscatedString(
+    "hello",
+    repetitions: 5
+)
+```
+
 ## License
 
 ObfuscateMacro is released under the MIT License. See [LICENSE](./LICENSE)
