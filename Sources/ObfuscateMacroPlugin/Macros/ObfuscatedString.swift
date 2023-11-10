@@ -24,10 +24,17 @@ struct ObfuscatedString {
         let string: String
         /// obfuscation method
         let method: ObfuscateMethod
+        /// Number of obfuscation repetitions
+        let repetitions: Int
 
-        init(string: String, method: ObfuscateMethod?) {
+        init(
+            string: String,
+            method: ObfuscateMethod?,
+            repetitions: Int = 1
+        ) {
             self.string = string
             self.method = method ?? .randomAll
+            self.repetitions = repetitions
         }
     }
 
@@ -44,19 +51,28 @@ struct ObfuscatedString {
         }
         let string = stringLiteral.segments.description
 
-        guard arguments.count >= 2,
-              let expression = arguments.last?.expression else {
+        guard arguments.count >= 2 else {
             return .init(string: string, method: nil)
         }
 
+        let methodExpression = arguments.first(where: {
+            $0.label?.trimmed.text == "method"
+        })?.expression
+
+        let repetitionsExpression = arguments.first(where: {
+            $0.label?.trimmed.text == "repetitions"
+        })?.expression
+
         var method: ObfuscateMethod?
 
-        if let accessExpr = expression.as(MemberAccessExprSyntax.self) {
+        if let methodExpression,
+           let accessExpr = methodExpression.as(MemberAccessExprSyntax.self) {
             let rawValue = accessExpr.declName.baseName.trimmed.text
             method = ObfuscateMethod(rawValue: rawValue)
         }
 
-        if let functionExpr = expression.as(FunctionCallExprSyntax.self),
+        if let methodExpression,
+           let functionExpr = methodExpression.as(FunctionCallExprSyntax.self),
            let calledExpr = functionExpr.calledExpression.as(MemberAccessExprSyntax.self),
            calledExpr.declName.baseName.trimmed.text == "random",
            let argument = functionExpr.arguments.first?.expression.as(ArrayExprSyntax.self) {
@@ -73,7 +89,15 @@ struct ObfuscatedString {
             }
         }
 
-        return .init(string: string, method: method)
+        var repetitions = 1
+
+        if let repetitionsExpression,
+           let intExpr = repetitionsExpression.as(IntegerLiteralExprSyntax.self),
+           let number = Int(intExpr.literal.trimmed.text), number > 0 {
+            repetitions = number
+        }
+
+        return .init(string: string, method: method, repetitions: repetitions)
     }
 }
 
@@ -92,12 +116,12 @@ extension ObfuscatedString: ExpressionMacro {
 
         let string = arguments.string
 
-        let methods = arguments.method.elements
-        let method: ObfuscateMethod.Element = {
-            if methods.isEmpty {
+        let candidates = arguments.method.elements
+        let randomMethod: () -> ObfuscateMethod.Element = {
+            if candidates.isEmpty {
                 fatalError("Invalid Argument")
-            } else if methods.count == 1 {
-                return methods[0]
+            } else if candidates.count == 1 {
+                return candidates[0]
             } else {
                 let allCases = ObfuscateMethod.Element.allCases
                 let index = Int.random(
@@ -106,54 +130,89 @@ extension ObfuscatedString: ExpressionMacro {
                 )
                 return allCases[index]
             }
-        }()
-
-        switch method {
-        case .bitShift:
-            return obfuscateByShift(string)
-        case .bitXOR:
-            return obfuscateByXOR(string)
-        case .base64:
-            return obfuscateByBase64(string)
-#if canImport(CryptoKit)
-        case .AES:
-            return obfuscateByAES(string)
-#endif
         }
+
+        let methods = (0..<arguments.repetitions).map { _ in
+            randomMethod()
+        }
+
+
+        var codeBlockItems: [CodeBlockItemSyntax] = []
+        var data = string.data(using: .utf8)!
+
+        methods.forEach { method in
+            switch method {
+            case .bitShift:
+                (codeBlockItems, data) = obfuscateByShift(codeBlockItems, data: data)
+            case .bitXOR:
+                (codeBlockItems, data) = obfuscateByXOR(codeBlockItems, data: data)
+            case .base64:
+                (codeBlockItems, data) = obfuscateByBase64(codeBlockItems, data: data)
+#if canImport(CryptoKit)
+            case .AES:
+                (codeBlockItems, data) = obfuscateByAES(codeBlockItems, data: data)
+#endif
+            }
+        }
+
+        codeBlockItems = codeBlockItems.map {
+            $0.with(\.trailingTrivia, .newline)
+        }
+
+        return """
+        {
+            var data = Data(\(raw: data.array!))
+
+            \(CodeBlockItemListSyntax(codeBlockItems))
+            return String(
+                bytes: data,
+                encoding: .utf8
+            )!
+        }()
+        """
     }
 }
 
 extension ObfuscatedString {
-    /// Obfuscates the given string using XOR operation.
+    /// Obfuscates the given data using XOR operation.
     ///
     /// Using a random `seed` and the index `i` of the UTF8 element `c`, the following expression is obfuscated
     /// ```
     /// c ^ (seed + i)
     /// ```
     ///
-    /// - Parameter string: The string to be obfuscated.
-    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
-    static func obfuscateByXOR(_ string: String) -> ExprSyntax {
-        let seed: UTF8.CodeUnit = .random(
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByShift(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
+        let start: UTF8.CodeUnit = .random(
             in: 0x00...0xFF,
             using: &randomNumberGenerator
         )
-        let obfuscatedData = string.utf8.indexed().map { i, c in
-            let i: UTF8.CodeUnit = UTF8.CodeUnit(string.utf8.distance(from: string.utf8.startIndex, to: i) % Int(UInt8.max))
-            return c ^ (seed &+ i)
+        let step: UTF8.CodeUnit = .random(
+            in: 0x0...0xF,
+            using: &randomNumberGenerator
+        )
+        let obfuscatedDataElements = data.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c &+ (start &+ (step &* i))
         }
+        let obfuscatedData = Data(obfuscatedDataElements)
 
-        return """
-        {
-            String(
-                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in
-                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
-                    return c ^ (\(raw: seed) &+ i)
-                },
-                encoding: .utf8
-            )!
-        }()
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = Data(data.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c &- (\(raw: start) &+ (\(raw: step) &* i))
+        })
         """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, obfuscatedData)
     }
 
     /// Obfuscates the given string using bit shift operation.
@@ -164,52 +223,63 @@ extension ObfuscatedString {
     /// c + (start + (step * i))
     /// ```
     ///
-    /// - Parameter string: The string to be obfuscated.
-    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
-    static func obfuscateByShift(_ string: String) -> ExprSyntax {
-        let start: UTF8.CodeUnit = .random(
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByXOR(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
+        let seed: UTF8.CodeUnit = .random(
             in: 0x00...0xFF,
             using: &randomNumberGenerator
         )
-        let step: UTF8.CodeUnit = .random(
-            in: 0x0...0xF,
-            using: &randomNumberGenerator
-        )
-        let obfuscatedData = string.utf8.indexed().map { i, c in
-            let i: UTF8.CodeUnit = UTF8.CodeUnit(string.utf8.distance(from: string.utf8.startIndex, to: i) % Int(UInt8.max))
-            return c &+ (start &+ (step &* i))
+        let obfuscatedDataElements = data.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c ^ (seed &+ i)
         }
+        let obfuscatedData = Data(obfuscatedDataElements)
 
-        return """
-        {
-            String(
-                bytes: Data(\(raw: obfuscatedData)).indexed().map { i, c in
-                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
-                    return c &- (\(raw: start) &+ (\(raw: step) &* i))
-                },
-                encoding: .utf8
-            )!
-        }()
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = Data(data.indexed().map { i, c in
+            let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+            return c ^ (\(raw: seed) &+ i)
+        })
         """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, obfuscatedData)
     }
 
-    /// Obfuscates the given string using base64 operation.
-    /// - Parameter string: The string to be obfuscated.
-    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
-    static func obfuscateByBase64(_ string: String) -> ExprSyntax {
-        guard let data = string.data(using: .utf8) else {
-            return "\"\(raw: string)\""
-        }
+    /// Obfuscates the given data using base64 operation.
+    ///
+    /// Using a random `start`, `step` and the index `i` of the UTF8 element `c`, the following expression is obfuscated
+    /// Use &+ and &- operators to account for overflow after a shift.
+    /// ```
+    /// c + (start + (step * i))
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByBase64(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
         let base64String = data.base64EncodedString()
 
-        return """
-        {
-            String(
-                bytes: Data(base64Encoded: "\(raw: base64String)")!,
-                encoding: .utf8
-            )!
-        }()
+        let obfuscatedData = base64String.data(using: .utf8)!
+
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = Data(base64Encoded: String(data: data, encoding: .utf8)!)!
         """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, obfuscatedData)
     }
 
 #if canImport(CryptoKit)
@@ -217,9 +287,14 @@ extension ObfuscatedString {
     ///
     /// A 128-bit random key is used
     ///
-    /// - Parameter string: The string to be obfuscated.
-    /// - Returns: An `ExprSyntax`  to decipher obfuscated data back to original string
-    static func obfuscateByAES(_ string: String) -> ExprSyntax {
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByAES(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
         let keyData = Data.symmetricKeyData(
             size: 16, // 128 bits
             using: &randomNumberGenerator
@@ -230,24 +305,26 @@ extension ObfuscatedString {
             using: &randomNumberGenerator
         )
 
-        guard let data = string.data(using: .utf8),
-              let nonce = try? AES.GCM.Nonce(data: nonceData),
+        guard let nonce = try? AES.GCM.Nonce(data: nonceData),
               let sealedBox = try? AES.GCM.seal(data, using: key, nonce: nonce),
               let encryptedData = sealedBox.combined else {
-            return "\"\(raw: string)\""
+            return (codeBlockItems, data)
         }
 
-
-        return """
-        {
-            let sb = try! AES.GCM.SealedBox(combined: Data(\(raw: encryptedData.array!))) // sealedBox
-            let dd = try! AES.GCM.open(sb, using: SymmetricKey(data: Data(\(raw: keyData.array!)))) // decryptedData
-            return String(
-                bytes: dd,
-                encoding: .utf8
-            )!
-        }()
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = try! AES.GCM.open(
+            try! AES.GCM.SealedBox(
+                combined: Data(\(raw: encryptedData.array!))
+            ),
+            using: SymmetricKey(
+                data: Data(\(raw: keyData.array!))
+            )
+        )
         """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, encryptedData)
     }
 #endif
 }
