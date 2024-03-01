@@ -54,7 +54,8 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-                "ObfuscateMacro"
+                "ObfuscateMacro",
+                "ObfuscateMacroPlugin"
             ]
         ),
     ]
