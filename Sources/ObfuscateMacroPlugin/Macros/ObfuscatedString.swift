@@ -108,8 +108,8 @@ extension ObfuscatedString: ExpressionMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) -> ExprSyntax {
-        guard let arguments = arguments(of: node.arguments, context: context) else {
-            let diagnostic = Diagnostic.failedToParseArguments.diagnose(at: node.arguments)
+        guard let arguments = arguments(of: node.argumentList, context: context) else {
+            let diagnostic = Diagnostic.failedToParseArguments.diagnose(at: node.argumentList)
             context.diagnose(diagnostic)
             fatalError(diagnostic.message)
         }
