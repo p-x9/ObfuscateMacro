@@ -131,12 +131,11 @@ extension ObfuscatedString: ExpressionMacro {
             } else if candidates.count == 1 {
                 return candidates[0]
             } else {
-                let allCases = ObfuscateMethod.Element.allCases
                 let index = Int.random(
-                    in: allCases.startIndex..<allCases.endIndex,
+                    in: candidates.startIndex..<candidates.endIndex,
                     using: &randomNumberGenerator
                 )
-                return allCases[index]
+                return candidates[index]
             }
         }
 
