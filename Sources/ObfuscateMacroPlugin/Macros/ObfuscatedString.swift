@@ -12,7 +12,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
 import Crypto
-import MacroToolkit
+import struct MacroToolkit.StringLiteral
 import ObfuscateSupport
 
 struct ObfuscatedString {
