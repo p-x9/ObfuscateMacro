@@ -41,9 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Swift
-        uses: slashmo/install-swift@v0.4.0
+        uses: swift-actions/setup-swift@v2
         with:
-          version: swift-5.9-RELEASE
+          swift-version: "5.9.0"
 
       - uses: actions/checkout@v4
 
