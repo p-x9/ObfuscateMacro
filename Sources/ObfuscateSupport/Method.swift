@@ -18,10 +18,8 @@ public enum ObfuscateMethod {
         case bitXOR
         /// Obfuscation using base64 encoding.
         case base64
-#if canImport(CryptoKit)
         /// Obfuscation using AES encryption.
         case AES
-#endif
     }
     
     /// Obfuscation using bit shifting.
@@ -30,10 +28,8 @@ public enum ObfuscateMethod {
     case bitXOR
     /// Obfuscation using base64 encoding.
     case base64
-#if canImport(CryptoKit)
     /// Obfuscation using AES encryption.
     case AES
-#endif
     
     /// Randomly selects one obfuscation method from all available methods.
     case randomAll

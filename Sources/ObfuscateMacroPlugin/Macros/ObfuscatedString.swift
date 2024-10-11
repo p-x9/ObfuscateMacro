@@ -11,9 +11,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
-#if canImport(CryptoKit)
-import CryptoKit
-#endif
+import Crypto
 import ObfuscateSupport
 
 struct ObfuscatedString {
@@ -155,10 +153,8 @@ extension ObfuscatedString: ExpressionMacro {
                 (codeBlockItems, data) = obfuscateByXOR(codeBlockItems, data: data)
             case .base64:
                 (codeBlockItems, data) = obfuscateByBase64(codeBlockItems, data: data)
-#if canImport(CryptoKit)
             case .AES:
                 (codeBlockItems, data) = obfuscateByAES(codeBlockItems, data: data)
-#endif
             }
         }
 
@@ -289,7 +285,6 @@ extension ObfuscatedString {
         return (codeBlockItems, obfuscatedData)
     }
 
-#if canImport(CryptoKit)
     /// Obfuscates the given string using AES operation.
     ///
     /// A 128-bit random key is used
@@ -333,5 +328,4 @@ extension ObfuscatedString {
 
         return (codeBlockItems, encryptedData)
     }
-#endif
 }
