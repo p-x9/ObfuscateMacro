@@ -55,7 +55,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Install Swift
-        uses: swift-actions/setup-swift@v2
+        uses: SwiftyLab/setup-swift@latest
         with:
           swift-version: "5.9.1"
 
