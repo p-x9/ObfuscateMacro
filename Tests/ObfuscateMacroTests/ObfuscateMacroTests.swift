@@ -34,12 +34,10 @@ final class ObfuscateMacroTests: XCTestCase {
             "hello, こんにちは, 👪",
             #ObfuscatedString("hello, こんにちは, 👪", method: .base64)
         )
-#if canImport(CryptoKit)
         XCTAssertEqual(
             "hello, こんにちは, 👪",
             #ObfuscatedString("hello, こんにちは, 👪", method: .AES)
         )
-#endif
         XCTAssertEqual(
             "hello, こんにちは, 👪",
             #ObfuscatedString("hello, こんにちは, 👪", repetitions: 5)
@@ -70,7 +68,6 @@ final class ObfuscateMacroTests: XCTestCase {
                 method: .base64
             )
         )
-#if canImport(CryptoKit)
         XCTAssertEqual(
             original,
             #ObfuscatedString(
@@ -78,7 +75,6 @@ final class ObfuscateMacroTests: XCTestCase {
                 method: .AES
             )
         )
-#endif
     }
 
     func testBitShift() {
@@ -159,7 +155,6 @@ final class ObfuscateMacroTests: XCTestCase {
         )
     }
 
-#if canImport(CryptoKit)
     func testAES() {
         assertMacroExpansion(
             """
@@ -190,7 +185,6 @@ final class ObfuscateMacroTests: XCTestCase {
             macros: macros
         )
     }
-#endif
 
     func testRandomAll() {
         let originalSource = """
