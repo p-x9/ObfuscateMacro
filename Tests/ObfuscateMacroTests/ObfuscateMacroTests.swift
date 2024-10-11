@@ -283,6 +283,41 @@ final class ObfuscateMacroTests: XCTestCase {
         )
     }
 
+    func testDiagnosticNonStaticString() {
+        assertMacroExpansion(
+            """
+            let string = #ObfuscatedString(
+                "hello, \\(someVarForStringInterpolation), こんにちは, 👪",
+                method: .AES
+            )
+            """,
+            expandedSource: """
+            let string = {
+                var data = Data([])
+
+                data = Data(data.indexed().map { i, c in
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c &- (1 &+ (0 &* i))
+                })
+
+                return String(
+                    bytes: data,
+                    encoding: .utf8
+                )!
+            }()
+            """,
+            diagnostics: [
+                .init(
+                    message: ObfuscateMacroDiagnostic.stringIsNotStatic.message,
+                    line: 2,
+                    column: 5,
+                    severity: .error
+                )
+            ],
+            macros: macros
+        )
+    }
+
     func testDiagnosticsEmptyCandidate() {
         assertMacroExpansion(
             """

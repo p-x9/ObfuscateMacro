@@ -43,11 +43,19 @@ struct ObfuscatedString {
         of arguments: LabeledExprListSyntax,
         context: some MacroExpansionContext
     ) -> Arguments? {
-        guard let firstElement = arguments.first?.expression,
-              let stringLiteral = firstElement.as(StringLiteralExprSyntax.self) else {
+        guard let stringArgument = arguments.first?.expression,
+              let stringSegments = stringArgument.as(StringLiteralExprSyntax.self)?.segments else {
             return nil
         }
-        let string = stringLiteral.segments.description
+
+        guard stringSegments.count == 1,
+              case .stringSegment(let stringLiteral)? = stringSegments.first
+        else {
+            context.diagnose(Diagnostic.stringIsNotStatic.diagnose(at: stringArgument))
+            return .init(string: "", method: nil)
+        }
+
+        let string = stringLiteral.content.text
 
         guard arguments.count >= 2 else {
             return .init(string: string, method: nil)
