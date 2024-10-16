@@ -19,15 +19,6 @@
       }
     },
     {
-      "identity" : "swift-macro-toolkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-macro-toolkit.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "47a6e57c1ff53d47aa4ec1d7a30423c4bd9a2662"
-      }
-    },
-    {
       "identity" : "swift-numerics",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-numerics.git",

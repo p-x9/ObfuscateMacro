@@ -12,7 +12,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
 import Crypto
-import struct MacroToolkit.StringLiteral
+import SwiftParser
 import ObfuscateSupport
 
 struct ObfuscatedString {
@@ -50,7 +50,7 @@ struct ObfuscatedString {
             return nil
         }
 
-        guard let string = StringLiteral(stringLiteralSyntax).value else {
+        guard let string = stringLiteralSyntax.representedLiteralValue else {
             context.diagnose(Diagnostic.stringIsNotStatic.diagnose(at: stringArgument))
             return .init(string: "", method: nil)
         }
