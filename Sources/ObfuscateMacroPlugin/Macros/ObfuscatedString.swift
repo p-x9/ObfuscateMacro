@@ -12,6 +12,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
 import Crypto
+import SwiftParser
 import ObfuscateSupport
 
 struct ObfuscatedString {
@@ -43,11 +44,16 @@ struct ObfuscatedString {
         of arguments: LabeledExprListSyntax,
         context: some MacroExpansionContext
     ) -> Arguments? {
-        guard let firstElement = arguments.first?.expression,
-              let stringLiteral = firstElement.as(StringLiteralExprSyntax.self) else {
+        guard let stringArgument = arguments.first?.expression,
+              let stringLiteralSyntax = stringArgument.as(StringLiteralExprSyntax.self)
+        else {
             return nil
         }
-        let string = stringLiteral.segments.description
+
+        guard let string = stringLiteralSyntax.representedLiteralValue else {
+            context.diagnose(Diagnostic.stringIsNotStatic.diagnose(at: stringArgument))
+            return .init(string: "", method: nil)
+        }
 
         guard arguments.count >= 2 else {
             return .init(string: string, method: nil)

@@ -11,6 +11,7 @@ import SwiftDiagnostics
 
 public enum ObfuscateMacroDiagnostic {
     case failedToParseArguments
+    case stringIsNotStatic
     case methodCandidateIsEmpty
 }
 
@@ -23,6 +24,8 @@ extension ObfuscateMacroDiagnostic: DiagnosticMessage {
         switch self {
         case .failedToParseArguments:
             return "Failed to parse arguments of this macro"
+        case .stringIsNotStatic:
+            return "The provided string must be static."
         case .methodCandidateIsEmpty:
             return "The element specified in `ObfuscateMethod.random` is empty."
         }

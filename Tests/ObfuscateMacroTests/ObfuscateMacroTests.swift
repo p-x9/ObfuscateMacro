@@ -283,6 +283,75 @@ final class ObfuscateMacroTests: XCTestCase {
         )
     }
 
+    func testAcceptsUnicodeEscapeSequence() {
+        XCTAssertEqual(
+            "hello, こんにちは, 👪, †",
+            #ObfuscatedString("hello, こんにちは, 👪, \u{2020}", method: .bitShift)
+        )
+    }
+
+    func testMultilineString() {
+        XCTAssertEqual(
+            """
+            Line 1\nLine 2\nhello, こんにちは, 👪\n3
+            """,
+            #ObfuscatedString(
+            """
+            Line 1
+            Line 2
+            hello, こんにちは, 👪
+            3
+            """, method: .bitShift)
+        )
+
+        XCTAssertEqual(
+            #ObfuscatedString("""
+            Line 1\nLine 2\nhello, こんにちは, 👪\n3
+            """, method: .bitShift),
+            """
+            Line 1
+            Line 2
+            hello, こんにちは, 👪
+            3
+            """
+        )
+    }
+
+    func testDiagnosticNonStaticString() {
+        assertMacroExpansion(
+            """
+            let string = #ObfuscatedString(
+                "hello, \\(someVarForStringInterpolation), こんにちは, 👪",
+                method: .AES
+            )
+            """,
+            expandedSource: """
+            let string = {
+                var data = Data([])
+
+                data = Data(data.indexed().map { i, c in
+                    let i: UTF8.CodeUnit = UTF8.CodeUnit(i % Int(UInt8.max))
+                    return c &- (1 &+ (0 &* i))
+                })
+
+                return String(
+                    bytes: data,
+                    encoding: .utf8
+                )!
+            }()
+            """,
+            diagnostics: [
+                .init(
+                    message: ObfuscateMacroDiagnostic.stringIsNotStatic.message,
+                    line: 2,
+                    column: 5,
+                    severity: .error
+                )
+            ],
+            macros: macros
+        )
+    }
+
     func testDiagnosticsEmptyCandidate() {
         assertMacroExpansion(
             """

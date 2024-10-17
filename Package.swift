@@ -30,7 +30,7 @@ let package = Package(
         .package(
             url: "https://github.com/apple/swift-crypto.git",
             "1.0.0"..<"4.0.0"
-        ),
+        )
     ],
     targets: [
         .target(
@@ -49,6 +49,7 @@ let package = Package(
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 .product(name: "Algorithms", package: "swift-algorithms"),
                 .product(name: "Crypto", package: "swift-crypto"),
