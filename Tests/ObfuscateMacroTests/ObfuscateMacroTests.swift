@@ -169,7 +169,7 @@ final class ObfuscateMacroTests: XCTestCase {
 
                 data = try! AES.GCM.open(
                     try! AES.GCM.SealedBox(
-                        combined: Data([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 223, 66, 205, 116, 143, 77, 166, 74, 213, 199, 222, 24, 49, 109, 118, 142, 71, 240, 128, 241, 24, 96, 94, 98, 225, 144, 159, 161, 160, 205, 228, 140, 223, 237, 149, 198, 3, 111, 233, 223, 97, 98, 207, 140])
+                        combined: data
                     ),
                     using: SymmetricKey(
                         data: Data([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])

@@ -322,7 +322,7 @@ extension ObfuscatedString {
         let codeBlockItem: CodeBlockItemSyntax = """
         data = try! AES.GCM.open(
             try! AES.GCM.SealedBox(
-                combined: Data(\(raw: encryptedData.array!))
+                combined: data
             ),
             using: SymmetricKey(
                 data: Data(\(raw: keyData.array!))
