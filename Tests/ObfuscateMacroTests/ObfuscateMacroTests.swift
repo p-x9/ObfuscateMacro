@@ -17,7 +17,7 @@ final class ObfuscateMacroTests: XCTestCase {
         "ObfuscatedString": ObfuscatedString.self
     ]
 
-    override class func setUp() {
+    override func setUp() {
         ObfuscatedString.randomNumberGenerator = TestRandomNumberGenerator(seed: 1)
     }
 
