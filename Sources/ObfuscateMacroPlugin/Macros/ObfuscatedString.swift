@@ -325,7 +325,7 @@ extension ObfuscatedString {
                 combined: data
             ),
             using: SymmetricKey(
-                data: Data(\(raw: keyData.array!))
+                data: \(raw: keyData.array!)
             )
         )
         """
