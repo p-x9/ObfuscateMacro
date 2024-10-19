@@ -161,6 +161,8 @@ extension ObfuscatedString: ExpressionMacro {
                 (codeBlockItems, data) = obfuscateByBase64(codeBlockItems, data: data)
             case .AES:
                 (codeBlockItems, data) = obfuscateByAES(codeBlockItems, data: data)
+            case .chaChaPoly:
+                (codeBlockItems, data) = obfuscateByChaChaPoly(codeBlockItems, data: data)
             }
         }
 
@@ -325,7 +327,7 @@ extension ObfuscatedString {
                 combined: data
             ),
             using: SymmetricKey(
-                data: Data(\(raw: keyData.array!))
+                data: \(raw: keyData.array!)
             )
         )
         """
@@ -333,5 +335,48 @@ extension ObfuscatedString {
         let codeBlockItems = [codeBlockItem] + codeBlockItems
 
         return (codeBlockItems, encryptedData)
+    }
+
+    /// Obfuscates the given string using ChaChaPoly.
+    ///
+    /// A 128-bit random key is used
+    ///
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByChaChaPoly(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
+        let keyData = Data.symmetricKeyData(
+            size: 32, // 256 bits
+            using: &randomNumberGenerator
+        )
+        let key: SymmetricKey = .init(data: keyData)
+
+        let nonceData = Data.nonceData(
+            using: &randomNumberGenerator
+        )
+
+        guard let nonce = try? ChaChaPoly.Nonce(data: nonceData),
+              let sealedBox = try? ChaChaPoly.seal(data, using: key, nonce: nonce) else {
+            return (codeBlockItems, data)
+        }
+
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = try! ChaChaPoly.open(
+            try! ChaChaPoly.SealedBox(
+                combined: data
+            ),
+            using: SymmetricKey(
+                data: \(raw: keyData.array!)
+            )
+        )
+        """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, sealedBox.combined)
     }
 }
