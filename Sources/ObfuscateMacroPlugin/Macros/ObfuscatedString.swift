@@ -11,9 +11,8 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
-#if canImport(CryptoKit)
-import CryptoKit
-#endif
+import Crypto
+import SwiftParser
 import ObfuscateSupport
 
 struct ObfuscatedString {
@@ -45,11 +44,16 @@ struct ObfuscatedString {
         of arguments: LabeledExprListSyntax,
         context: some MacroExpansionContext
     ) -> Arguments? {
-        guard let firstElement = arguments.first?.expression,
-              let stringLiteral = firstElement.as(StringLiteralExprSyntax.self) else {
+        guard let stringArgument = arguments.first?.expression,
+              let stringLiteralSyntax = stringArgument.as(StringLiteralExprSyntax.self)
+        else {
             return nil
         }
-        let string = stringLiteral.segments.description
+
+        guard let string = stringLiteralSyntax.representedLiteralValue else {
+            context.diagnose(Diagnostic.stringIsNotStatic.diagnose(at: stringArgument))
+            return .init(string: "", method: nil)
+        }
 
         guard arguments.count >= 2 else {
             return .init(string: string, method: nil)
@@ -155,10 +159,10 @@ extension ObfuscatedString: ExpressionMacro {
                 (codeBlockItems, data) = obfuscateByXOR(codeBlockItems, data: data)
             case .base64:
                 (codeBlockItems, data) = obfuscateByBase64(codeBlockItems, data: data)
-#if canImport(CryptoKit)
             case .AES:
                 (codeBlockItems, data) = obfuscateByAES(codeBlockItems, data: data)
-#endif
+            case .chaChaPoly:
+                (codeBlockItems, data) = obfuscateByChaChaPoly(codeBlockItems, data: data)
             }
         }
 
@@ -289,7 +293,6 @@ extension ObfuscatedString {
         return (codeBlockItems, obfuscatedData)
     }
 
-#if canImport(CryptoKit)
     /// Obfuscates the given string using AES operation.
     ///
     /// A 128-bit random key is used
@@ -321,10 +324,10 @@ extension ObfuscatedString {
         let codeBlockItem: CodeBlockItemSyntax = """
         data = try! AES.GCM.open(
             try! AES.GCM.SealedBox(
-                combined: Data(\(raw: encryptedData.array!))
+                combined: data
             ),
             using: SymmetricKey(
-                data: Data(\(raw: keyData.array!))
+                data: \(raw: keyData.array!)
             )
         )
         """
@@ -333,5 +336,47 @@ extension ObfuscatedString {
 
         return (codeBlockItems, encryptedData)
     }
-#endif
+
+    /// Obfuscates the given string using ChaChaPoly.
+    ///
+    /// A 128-bit random key is used
+    ///
+    /// - Parameters:
+    ///   - codeBlockItems:  List of current `CodeBlockItemSyntax` to decode the obfuscated data back to the original data.
+    ///   - data: The data to be obfuscated.
+    /// - Returns: Obfuscated data and ExprSyntax with additional decoding process
+    static func obfuscateByChaChaPoly(
+        _ codeBlockItems: [CodeBlockItemSyntax],
+        data: Data
+    ) -> ([CodeBlockItemSyntax], Data) {
+        let keyData = Data.symmetricKeyData(
+            size: 32, // 256 bits
+            using: &randomNumberGenerator
+        )
+        let key: SymmetricKey = .init(data: keyData)
+
+        let nonceData = Data.nonceData(
+            using: &randomNumberGenerator
+        )
+
+        guard let nonce = try? ChaChaPoly.Nonce(data: nonceData),
+              let sealedBox = try? ChaChaPoly.seal(data, using: key, nonce: nonce) else {
+            return (codeBlockItems, data)
+        }
+
+        let codeBlockItem: CodeBlockItemSyntax = """
+        data = try! ChaChaPoly.open(
+            try! ChaChaPoly.SealedBox(
+                combined: data
+            ),
+            using: SymmetricKey(
+                data: \(raw: keyData.array!)
+            )
+        )
+        """
+
+        let codeBlockItems = [codeBlockItem] + codeBlockItems
+
+        return (codeBlockItems, sealedBox.combined)
+    }
 }

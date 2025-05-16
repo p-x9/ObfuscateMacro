@@ -15,10 +15,10 @@ extension ObfuscateMethod {
         case "bitShift": self = .bitShift
         case "bitXOR": self = .bitXOR
         case "base64": self = .base64
-#if canImport(CryptoKit)
         case "AES": self = .AES
-#endif
+        case "chaChaPoly": self = .chaChaPoly
         case "randomAll": self = .randomAll
+        case "randomAllCrypto": self = .randomAllCrypto
         default: return nil
         }
     }
@@ -30,9 +30,8 @@ extension ObfuscateMethod.Element {
         case "bitShift": self = .bitShift
         case "bitXOR": self = .bitXOR
         case "base64": self = .base64
-#if canImport(CryptoKit)
         case "AES": self = .AES
-#endif
+        case "chaChaPoly": self = .chaChaPoly
         default: return nil
         }
     }
@@ -47,12 +46,14 @@ extension ObfuscateMethod {
             return [.bitXOR]
         case .base64:
             return [.base64]
-#if canImport(CryptoKit)
         case .AES:
             return [.AES]
-#endif
+        case .chaChaPoly:
+            return [.chaChaPoly]
         case .randomAll:
             return Element.allCases
+        case .randomAllCrypto:
+            return Element.allCases.filter(\.usesCrypto)
         case .random(let array):
             return array
         }
