@@ -436,7 +436,7 @@ final class ObfuscateMacroTests: XCTestCase {
         XCTAssertEqual(
             #ObfuscatedString("""
             Line 1\nLine 2\nhello, こんにちは, 👪\n3
-            """, method: .bitShift).withPlatformNewLine,
+            """, method: .bitShift),
             """
             Line 1
             Line 2
