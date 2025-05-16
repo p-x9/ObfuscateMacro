@@ -423,7 +423,7 @@ final class ObfuscateMacroTests: XCTestCase {
         XCTAssertEqual(
             """
             Line 1\nLine 2\nhello, こんにちは, 👪\n3
-            """,
+            """.withPlatformNewLine,
             #ObfuscatedString(
             """
             Line 1
@@ -436,7 +436,7 @@ final class ObfuscateMacroTests: XCTestCase {
         XCTAssertEqual(
             #ObfuscatedString("""
             Line 1\nLine 2\nhello, こんにちは, 👪\n3
-            """, method: .bitShift),
+            """, method: .bitShift).withPlatformNewLine,
             """
             Line 1
             Line 2
@@ -515,4 +515,14 @@ final class ObfuscateMacroTests: XCTestCase {
             macros: macros
         )
     }
+}
+
+extension String {
+  var withPlatformNewLine: String {
+    #if os(Windows)
+      return replacingOccurrences(of: "\n", with: "\r\n")
+    #else
+      return self
+    #endif
+  }
 }
