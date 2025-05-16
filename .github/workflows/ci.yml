@@ -39,11 +39,21 @@ jobs:
   linux-test:
     name: Linux Test
     runs-on: ubuntu-latest
+    container: swift:6.1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test
+        run: swift test
+  
+  windows-test:
+    name: Windows Test
+    runs-on: windows-latest
     steps:
       - name: Install Swift
-        uses: swift-actions/setup-swift@v2
+        uses: SwiftyLab/setup-swift@latest
         with:
-          swift-version: '6.1.0'
+          swift-version: "6.1.0"
 
       - uses: actions/checkout@v4
 
