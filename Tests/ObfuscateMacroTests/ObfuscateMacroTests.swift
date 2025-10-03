@@ -430,7 +430,7 @@ final class ObfuscateMacroTests: XCTestCase {
             """, method: .bitShift),
             """
             Line 1\nLine 2\nhello, こんにちは, 👪\n3
-            """
+            """.withPlatformNewLine
         )
 
         XCTAssertEqual(
@@ -518,11 +518,19 @@ final class ObfuscateMacroTests: XCTestCase {
 }
 
 extension String {
-  var withPlatformNewLine: String {
-    #if os(Windows)
-      return replacingOccurrences(of: "\n", with: "\r\n")
-    #else
-      return self
-    #endif
-  }
+    var withPlatformNewLineIfNeeded: String {
+#if canImport(SwiftSyntax602)
+        return self
+#else
+        return withPlatformNewLine
+#endif
+    }
+
+    var withPlatformNewLine: String {
+#if os(Windows)
+        return replacingOccurrences(of: "\n", with: "\r\n")
+#else
+        return self
+#endif
+    }
 }
