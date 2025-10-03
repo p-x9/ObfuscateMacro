@@ -430,7 +430,7 @@ final class ObfuscateMacroTests: XCTestCase {
             """, method: .bitShift),
             """
             Line 1\nLine 2\nhello, こんにちは, 👪\n3
-            """.withPlatformNewLine
+            """
         )
 
         XCTAssertEqual(
@@ -442,7 +442,7 @@ final class ObfuscateMacroTests: XCTestCase {
             Line 2
             hello, こんにちは, 👪
             3
-            """.withPlatformNewLine
+            """
         )
     }
 
