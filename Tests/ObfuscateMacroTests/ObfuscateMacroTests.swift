@@ -442,7 +442,7 @@ final class ObfuscateMacroTests: XCTestCase {
             Line 2
             hello, こんにちは, 👪
             3
-            """
+            """.withPlatformNewLine
         )
     }
 
