@@ -3,17 +3,6 @@
 import PackageDescription
 import CompilerPluginSupport
 
-#if os(Windows)
-    let macroSwiftSettings: [SwiftSetting] = [
-        .unsafeFlags([
-            "-Xfrontend", "-entry-point-function-name",
-            "-Xfrontend", "wWinMain",
-        ]),
-    ]
-#else
-    let macroSwiftSettings: [SwiftSetting] = []
-#endif
-
 let package = Package(
     name: "ObfuscateMacro",
     platforms: [
@@ -66,8 +55,7 @@ let package = Package(
                 .product(name: "Algorithms", package: "swift-algorithms"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 "ObfuscateSupport"
-            ],
-            swiftSettings: macroSwiftSettings
+            ]
         ),
         .target(name: "ObfuscateSupport"),
         .testTarget(
